@@ -1,0 +1,2 @@
+program time_array_multiply
+end program time_array_multiply
