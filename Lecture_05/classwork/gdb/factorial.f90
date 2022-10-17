@@ -3,7 +3,7 @@ program main
     integer :: n
     print "(a)", "Number n is "
     read *, n
-    print "(a, i0)", "n! is ", factorial( n )
+    print "(i0, '! is ', i0)", n, factorial( n )
 contains
     recursive function factorial( i ) result(answer)
         integer             :: answer
