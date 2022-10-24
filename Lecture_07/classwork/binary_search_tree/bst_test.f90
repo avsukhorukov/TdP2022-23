@@ -29,7 +29,7 @@ program bst_test
     end block
 
     block
-        type(a_bst_node), pointer :: root, temp
+        type(a_bst_node), pointer :: temp
 
         temp => bst_search( root, 6 )
         print "(a, i0)", "Full sum = ", bst_sum( temp )
