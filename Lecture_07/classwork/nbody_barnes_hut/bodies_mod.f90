@@ -2,10 +2,6 @@ module bodies_mod
     use :: body_mod
     use :: node_mod, only: the_dims
     implicit none
-    !private :: bodies
-    !public :: bodies_init, bodies_destroy, bodies_print_cooridinates, &
-    !    bodies_get_size, bodies_half_kick, bodies_drift, &
-    !    bodies_accelerate
 
     type(a_body), allocatable, dimension(:), target :: bodies
 
@@ -51,19 +47,19 @@ contains
         end do
     end subroutine bodies_drift
 
-    subroutine bodies_accelerate()
-        integer :: i, j
+    ! subroutine bodies_accelerate()
+    !     integer :: i, j
     
-        do i = 1, size( bodies )
-            associate( b_i => bodies(i) )
-                b_i%a(:) = 0.0
-                do j = 1, size( bodies )
-                    if (j == i) cycle
-                    b_i%a(:) = b_i%a(:) + body_acceleration_from( b_i, bodies(j) )
-                end do
-            end associate
-        end do
-    end subroutine bodies_accelerate
+    !     do i = 1, size( bodies )
+    !         associate( b_i => bodies(i) )
+    !             b_i%a(:) = 0.0
+    !             do j = 1, size( bodies )
+    !                 if (j == i) cycle
+    !                 b_i%a(:) = b_i%a(:) + body_acceleration_from( b_i, bodies(j) )
+    !             end do
+    !         end associate
+    !     end do
+    ! end subroutine bodies_accelerate
 
     integer function bodies_get_size()
         bodies_get_size = size( bodies )

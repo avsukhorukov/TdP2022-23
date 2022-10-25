@@ -1,7 +1,7 @@
 module node_mod
-    use :: body_mod
+    use :: body_mod, only: a_body, body_acceleration_from
 
-    type :: the_dims    ! dimensions of a cell
+    type :: the_dims    ! cell dimensions
         real :: min(2)
         real :: max(2)
     end type the_dims
@@ -93,12 +93,113 @@ contains
         node%R = (RM + body%r * body%m) / node%M
     end subroutine node_update_centroid
 
-    ! TODO
     recursive subroutine node_insert( node, body, dims )
-        type(a_node_ptr),      intent(inout) :: node
-        type(a_body), pointer, intent(in)    :: body
-        type(the_dims),        intent(in)    :: dims
-        ! ...
+        type(a_node_ptr),      intent(in out) :: node
+        type(a_body), pointer, intent(in)     :: body
+        type(the_dims),        intent(in)     :: dims
+        integer        :: quadrant(2), i, j
+        type(the_dims) :: sub_dims
+
+        select case (node_type( node ))
+        case (node_is_empty)
+            allocate(node%ptr)
+            node%ptr = a_node(M=body%m, R=body%r, dims=dims, body=body, subtree=null())
+        case (node_is_a_body)
+            associate( ptr => node%ptr )
+                ! One more body turns this node into a cell.
+                allocate(ptr%subtree(2, 2))
+                do j = 1, 2
+                    do i = 1, 2
+                        ptr%subtree(i, j)%ptr => null()
+                    end do
+                end do
+
+                ! Move the old body into some subcell.
+                call node_subdivide( ptr, ptr%R, quadrant, sub_dims )
+                associate( subcell => ptr%subtree(quadrant(1), quadrant(2)) )
+                    call node_insert( subcell, ptr%body, sub_dims )
+                end associate
+                nullify(ptr%body)
+
+                ! Insert the new body into some subcell.
+                call node_update_centroid( ptr, body )
+                call node_subdivide( ptr, body%r, quadrant, sub_dims )
+                associate( subcell => ptr%subtree(quadrant(1), quadrant(2)) )
+                    call node_insert( subcell, body, sub_dims )
+                end associate
+            end associate
+        case (node_is_a_cell)
+            associate( ptr => node%ptr )
+                ! Add the new body into some subcell.
+                call node_update_centroid( ptr, body )
+                call node_subdivide( ptr, body%r, quadrant, sub_dims )
+                associate( subcell => ptr%subtree(quadrant(1), quadrant(2)) )
+                    call node_insert( subcell, body, sub_dims )
+                end associate
+            end associate
+        case default
+            stop "node_mod::node_insert: wrong node type."
+        end select
     end subroutine node_insert
+
+    recursive subroutine node_destroy( node )
+        class(a_node_ptr), intent(inout) :: node
+
+        select case (node_type( node ))
+        case (node_is_empty)
+            return
+        case (node_is_a_body)
+            deallocate(node%ptr)
+        case (node_is_a_cell)
+            block
+                integer :: i, j
+                do j = 1, 2
+                    do i = 1, 2
+                        call node_destroy( node%ptr%subtree(i, j) )
+                    end do
+                end do
+            end block
+            deallocate(node%ptr%subtree)
+            deallocate(node%ptr)
+        case default
+            stop "node_mod::node_destroy: wrong node type"
+        end select
+    end subroutine node_destroy
+
+    recursive function node_acceleration_from( node, body ) result(a_ij)
+        real, dimension(2) :: a_ij
+        type(a_node_ptr),      intent(in) :: node
+        type(a_body), pointer, intent(in) :: body
+
+        a_ij(:) = 0.0
+        select case (node_type( node ))
+        case (node_is_empty)
+            return
+        case (node_is_a_body)
+            if (associated( body, node%ptr%body )) return
+            a_ij(:) = body_acceleration_from( body, node%ptr%body )
+        case (node_is_a_cell)
+            if ( node_is_far( node, body ) ) then
+                block
+                    real, dimension(2) :: r_ij
+                    r_ij(:) = node%ptr%R(:) - body%r(:)
+                    a_ij(:) = ( node%ptr%M / norm2( r_ij )**3 ) * r_ij(:)
+                end block
+            else
+                block
+                    integer :: i, j
+                    do j = 1, 2
+                        do i = 1, 2
+                            associate( subnode => node%ptr%subtree(i, j) )
+                                a_ij(:) = a_ij(:) + node_acceleration_from( subnode, body )
+                            end associate
+                        end do
+                    end do
+                end block
+            end if
+        case default
+            stop "node_mod::node_acceleration_from: wrong node type"
+        end select
+    end function node_acceleration_from
 
 end module node_mod
