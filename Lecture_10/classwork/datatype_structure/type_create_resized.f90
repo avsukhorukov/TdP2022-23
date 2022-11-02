@@ -32,13 +32,15 @@ program type_create_resized
         do c = 1, size( addrs )
             addrs(c) = MPI_Aint_diff( addrs(c), laddr ) ! addrs(:) = addrs(:) - laddr
         end do
+        uaddr = MPI_Aint_diff( uaddr, laddr ) ! ub = extent of a_body
+        laddr = MPI_Aint_diff( laddr, laddr ) ! lb = 0
     end block
-    uaddr = MPI_Aint_diff( uaddr, laddr )
     print "(a, 4i3, a, i0)", "addrs(1:4) = ", addrs, ", extent(a_body) = ", uaddr
-    stop
+    ! stop
 
     call MPI_Type_create_struct( 4, [1, 2, 2, 2], addrs, [MPI_REAL, MPI_REAL, MPI_REAL, MPI_REAL], a_struct )
     call MPI_Type_get_extent( a_struct, laddr, uaddr )
+    ! or use laddr uaddr from the previous measure of two array elements.
     call MPI_Type_create_resized( a_struct, laddr, uaddr, a_struct_arr )
     call MPI_Type_commit( a_struct_arr )
 
