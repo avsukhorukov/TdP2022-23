@@ -13,7 +13,7 @@ program deadlock
     use mpi_f08
     implicit none
     integer :: my_rank, n_ranks, first, last
-    integer, parameter   :: n = 40
+    integer, parameter   :: n = 40000
     integer, allocatable :: a(:), b(:)
     type(MPI_Status) :: status
 
@@ -37,7 +37,6 @@ program deadlock
         print '(a)', "Case I:   last rank done"
     end if
 
-#if 0
     ! Exchange that relies on buffering.
     ! Deadlock at N > 1010 (4040 b).
     if (my_rank == first) then
@@ -60,6 +59,7 @@ program deadlock
         call MPI_Send( a, n, MPI_INTEGER, first, 0, MPI_COMM_WORLD )
         print '(a)', "Case III: last rank done"
     end if
+#if 0
 #endif
 
     deallocate(a)

@@ -29,8 +29,9 @@ program send_string
         write(message, "(a, i0)") "Greetings from rank ", my_rank
         msg_len = len_trim( message )
         call MPI_Send( buf=message, count=msg_len, datatype=MPI_CHARACTER, &
-                       dest=0, tag=0, comm=MPI_COMM_WORLD                  )
+                        dest=0, tag=0, comm=MPI_COMM_WORLD                 )
     else ! (my_rank == 0)
+    !if (my_rank == 0) then
         do src = 1, n_ranks - 1
             call MPI_Recv( buf=message, count=msg_size, datatype=MPI_CHARACTER, &
                            source=src, tag=0, comm=MPI_COMM_WORLD, status=status )

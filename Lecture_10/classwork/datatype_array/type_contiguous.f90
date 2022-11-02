@@ -1,0 +1,37 @@
+program type_contiguous
+    use :: mpi_f08
+    use :: parallel_mod, only : serial_print
+    implicit none
+    integer :: n_ranks, my_rank, first, last
+    type(MPI_Status) :: status
+    integer, parameter :: side = 5
+    integer :: a(side, side)
+    integer :: i
+    type(MPI_Datatype) :: a_col
+
+    call MPI_Init()
+
+    call MPI_Comm_size( MPI_COMM_WORLD, n_ranks )
+    call MPI_Comm_rank( MPI_COMM_WORLD, my_rank )
+
+    first = 0;  last = n_ranks - 1
+
+    ! Create a contiguous type: a column of side integers of the default kind.
+    call MPI_Type_contiguous( side, MPI_INTEGER, a_col )
+    call MPI_Type_commit( a_col )
+
+    a(:, :) = 0
+    !call serial_print( a, my_rank, n_ranks, MPI_COMM_WORLD )
+
+    if (my_rank == first) then
+        a(:, :) = reshape( [(i, i = 1, side * side)], shape=[side, side] )
+        call MPI_Send( a(1, 1), 1, a_col, last, 0, MPI_COMM_WORLD )
+    else if (my_rank == last) then
+        call MPI_Recv( a(1, 1), 1, a_col, first, 0, MPI_COMM_WORLD, status )
+    end if
+
+    call serial_print( a, my_rank, n_ranks, MPI_COMM_WORLD )
+
+    call MPI_Type_free( a_col )
+    call MPI_Finalize()
+end program type_contiguous
