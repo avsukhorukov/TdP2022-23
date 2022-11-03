@@ -1,4 +1,10 @@
-program type_create_subarray
+! Compile together with `parallel_mod.f90` and run with 2 or more processes:
+!
+!   $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace \
+!     parallel_mod.f90 sendrecv.f90
+!   $ mpirun -np 2 --ovsersubscribe ./a.out
+!
+program type_subarray
     use :: mpi_f08
     use :: parallel_mod, only : serial_print
     implicit none
@@ -30,4 +36,4 @@ program type_create_subarray
 
     call MPI_Type_free( a_subarray )
     call MPI_Finalize()
-end program type_create_subarray
+end program type_subarray
