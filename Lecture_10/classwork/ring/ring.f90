@@ -21,7 +21,7 @@ program ring
     use mpi_f08
     implicit none
     integer :: my_rank, n_ranks, prev_rank, next_rank
-    integer, parameter      :: msg_size = 1000
+    integer, parameter      :: msg_size = 5000
     character(len=msg_size) :: message = ""
     type(MPI_Status) :: status
     character(len=10) :: comm_mode = ""
@@ -55,7 +55,7 @@ program ring
     end if
 
     init_time = MPI_Wtime()
-    if (my_rank == 0) print "(a)", "prev    my  next  :    ms    ms"
+    if (my_rank == 0) print "(a)", "prev    my  next  :   mks   mks"
 
     select case (trim(comm_mode))
     case ("all")

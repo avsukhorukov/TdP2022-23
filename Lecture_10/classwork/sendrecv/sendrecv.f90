@@ -11,7 +11,7 @@
 !
 !   $ mpirun -np 3 --ovsersubscribe ./a.out
 !
-program deadlock
+program sendrecv
     use mpi_f08
     implicit none
     integer, parameter :: n = 5 ! array size and format repetition
@@ -44,4 +44,4 @@ program deadlock
     deallocate(b)
 
     call MPI_Finalize()
-end program deadlock
+end program sendrecv

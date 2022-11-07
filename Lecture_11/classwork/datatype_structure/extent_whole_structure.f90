@@ -1,4 +1,4 @@
-program test_struct2
+program extent_whole_structure
     use mpi_f08
     implicit none
     integer :: n_ranks, my_rank
@@ -6,8 +6,8 @@ program test_struct2
     type(MPI_Datatype) :: a_struct
 
     type :: an_elem
-        real :: x = 0.0
-        character(len=1) :: ch = ''
+        real             :: x = 0.0 ! 4 bytes
+        character(len=1) :: ch = '' ! 1 byte + 3 bytes of padding
     end type an_elem
 
     type(an_elem) :: elems(2)
@@ -17,10 +17,10 @@ program test_struct2
     call MPI_Comm_size( MPI_COMM_WORLD, n_ranks )
     call MPI_Comm_rank( MPI_COMM_WORLD, my_rank )
 
-    call MPI_Get_address( elems(1),     laddr    ) ! 0
-    call MPI_Get_address( elems(1)%x,   addrs(1) ) ! 0
-    call MPI_Get_address( elems(1)%ch,  addrs(2) ) ! 4
-    call MPI_Get_address( elems(2),     uaddr    ) ! ?
+    call MPI_Get_address( elems(1),     laddr    ) ! 0 bytes
+    call MPI_Get_address( elems(1)%x,   addrs(1) ) ! 0 bytes
+    call MPI_Get_address( elems(1)%ch,  addrs(2) ) ! 4 bytes
+    call MPI_Get_address( elems(2),     uaddr    ) ! 8 bytes
 
     block
         integer :: c
@@ -37,4 +37,4 @@ program test_struct2
     print "(a, i0)", "extent(a_struct) = ", MPI_Aint_diff( uaddr, laddr )
 
     call MPI_Finalize()
-end program test_struct2
+end program extent_whole_structure
