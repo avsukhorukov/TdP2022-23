@@ -31,11 +31,11 @@ program pack_unpack
         print "(2(a, i0), a, f5.1, 3a)", &
             "Rank ", my_rank, ": i=", i, ", x=", x, ", name='", name, "'."
 
-        call MPI_Recv(buf, buf_len, MPI_PACKED, first, 0, MPI_COMM_WORLD , status)
+        call MPI_Recv( buf, buf_len, MPI_PACKED, first, 0, MPI_COMM_WORLD , status )
         position = 0
-        call MPI_Unpack(buf, buf_len, position, i,    1,         MPI_INTEGER,   MPI_COMM_WORLD )
-        call MPI_Unpack(buf, buf_len, position, x,    1,         MPI_REAL,      MPI_COMM_WORLD )
-        call MPI_Unpack(buf, buf_len, position, name, len(name), MPI_CHARACTER, MPI_COMM_WORLD )
+        call MPI_Unpack( buf, buf_len, position, i,    1,         MPI_INTEGER,   MPI_COMM_WORLD )
+        call MPI_Unpack( buf, buf_len, position, x,    1,         MPI_REAL,      MPI_COMM_WORLD )
+        call MPI_Unpack( buf, buf_len, position, name, len(name), MPI_CHARACTER, MPI_COMM_WORLD )
 
         print "(2(a, i0), a, f5.1, 3a)", &
             "Rank ", my_rank, ": i=", i, ", x=", x, ", name='", name, "'."

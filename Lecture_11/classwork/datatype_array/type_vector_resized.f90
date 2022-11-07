@@ -24,7 +24,7 @@ program type_vector_resized
     a(:, :) = 0
     if (my_rank == first) then
         a(:, :) = reshape( [(i,  i=1, side * side)], shape=[side, side] )
-        call MPI_Send( a(1, 1), 2, a_resized_row, last, 0, MPI_COMM_WORLD )
+        call MPI_Send( a(1, 1), 3, a_resized_row, last, 0, MPI_COMM_WORLD )
     else if (my_rank == last) then
         call MPI_Recv( a(1, 1), 5, a_resized_row, first, 0, MPI_COMM_WORLD, status )
     end if

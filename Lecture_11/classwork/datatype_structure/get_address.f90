@@ -8,8 +8,8 @@ program get_address
     call MPI_Init()
 
     call MPI_Get_address( i, addr1 )
-    call MPI_Get_address( x(2, 3), addr2 )
-    print "(z0, 1x, z0)", addr1, abs( addr2 - addr1 )
+    call MPI_Get_address( x(1, 1), addr2 )
+    print "(z0, 1x, i0)", addr1, addr1 - addr2
 
     call MPI_Finalize()
 end program get_address
