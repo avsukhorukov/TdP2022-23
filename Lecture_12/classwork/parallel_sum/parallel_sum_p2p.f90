@@ -4,12 +4,16 @@
 ! Compile and run:
 !
 !   $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace \
-!     -DEVEN parallel_mod.f90 parallel_sum.f90
+!     -DEVEN parallel_mod.f90 parallel_sum_p2p.f90
 !   $ mpirun -np 4 --oversubscribe ./a.out < in16.txt
 !   136
-program parallel_sum
+!
+! Note: students are confused if they are asked to send the local size of a
+! subarray.  It is better to send the global size and let each process calculate
+! its own size and indices.
+program parallel_sum_p2p
     use :: mpi_f08
-    use :: parallel_mod, only : partition
+    use :: parallel_mod, only : partition, barrier_print_1d
     implicit none
     integer :: my_rank, n_ranks, rank
     integer :: full_size, net_sum, b, e
@@ -57,6 +61,8 @@ program parallel_sum
         call MPI_Recv( arr(b), e - b + 1, MPI_INTEGER, 0, 0, MPI_COMM_WORLD, status )
     end if
 
+    call barrier_print_1d( arr, my_rank, n_ranks, MPI_COMM_WORLD )
+
     ! Calculate local sums.
     net_sum = sum(arr(:))
     deallocate(arr)
@@ -77,4 +83,4 @@ program parallel_sum
     end if
 
     call MPI_Finalize()
-end program parallel_sum
+end program parallel_sum_p2p
