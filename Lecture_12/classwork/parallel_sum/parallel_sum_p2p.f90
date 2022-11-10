@@ -64,7 +64,7 @@ program parallel_sum_p2p
     call barrier_print_1d( arr, my_rank, n_ranks, MPI_COMM_WORLD )
 
     ! Calculate local sums.
-    net_sum = sum(arr(:))
+    net_sum = sum( arr(:) )
     deallocate(arr)
 
     ! Add up sums at rank 0 and print the result.

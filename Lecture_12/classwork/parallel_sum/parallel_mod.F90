@@ -16,7 +16,11 @@ contains
         l = 1 + q * (id    )
         u =     q * (id + 1)
 #elif defined (UNEVEN)
-        ! TODO
+        integer :: r
+        r = modulo( size, n_ids ) ! remainder
+        q = (size - r) / n_ids    ! quotient
+        l = 1 + q * (id    ) + min( r, id     )
+        u =     q * (id + 1) + min( r, id + 1 )
 #endif
     end subroutine partition
 
