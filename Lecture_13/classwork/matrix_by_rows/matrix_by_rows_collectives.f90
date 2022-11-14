@@ -16,12 +16,12 @@
 ! Enter the size of 10.
 program matrix_by_rows_collectives
     use :: mpi_f08
-    use :: parallel_mod, only : get_open_rank, partition
+    use :: parallel_mod, only : partition
     implicit none
     integer              :: s       ! matrix size
     integer, allocatable :: e(:, :) ! matrix itself
-    integer :: my_rank, n_ranks, upper_rank, lower_rank
-    integer :: remainder, quotient, n_rows, i, ib, ie
+    integer :: my_rank, n_ranks
+    integer :: i, ib, ie
     type(MPI_Status) :: status
     type(MPI_Datatype) :: a_row
 
@@ -29,37 +29,13 @@ program matrix_by_rows_collectives
     call MPI_Comm_rank( MPI_COMM_WORLD, my_rank )
     call MPI_Comm_size( MPI_COMM_WORLD, n_ranks )
 
-!+  TODO: replace with a broadcast
     if (my_rank == 0) then
         print "(a)", "Enter the matrix size S:"
         read *, s
-        block
-            integer :: rank
-            do rank = 1, n_ranks - 1
-                call MPI_Send( s, 1, MPI_INTEGER, rank, 0, MPI_COMM_WORLD )
-            end do
-        end block
-    else
-        call MPI_Recv( s, 1, MPI_INTEGER, 0, 0, MPI_COMM_WORLD, status )
     end if
-!-
+    call MPI_Bcast( s, 1, MPI_INTEGER, 0, MPI_COMM_WORLD )
 
-!+  TODO: replace with call partition( my_rank, n_ranks, s, ib, ie )
-    remainder = modulo( s, n_ranks )
-    quotient  = (s - remainder) / n_ranks
-    n_rows = quotient + merge( 1, 0, my_rank < remainder )
-
-    ! More efficient method using MPI_PROC_NULL to suppress unnecessary calls.
-    upper_rank = get_open_rank( my_rank - 1, n_ranks )
-    lower_rank = get_open_rank( my_rank + 1, n_ranks )
-
-    i = 1
-    call MPI_Recv( i, 1, MPI_INTEGER, upper_rank, 0, MPI_COMM_WORLD, status )
-    ib = i
-    ie = i + n_rows - 1
-    i = ie + 1
-    call MPI_Send( i, 1, MPI_INTEGER, lower_rank, 0, MPI_COMM_WORLD )
-!-
+    call partition( my_rank, n_ranks, s, ib, ie )
 
     ! Initialize the local matrix.
     allocate(e(ib:ie, s), source=0)
@@ -74,7 +50,7 @@ program matrix_by_rows_collectives
         integer(kind=MPI_ADDRESS_KIND) :: lb, extent
 
         call MPI_Type_get_extent( MPI_INTEGER, lb, extent )
-        call MPI_Type_vector( s, 1, n_rows, MPI_INTEGER, a_tmp_row )
+        call MPI_Type_vector( s, 1, ie - ib + 1, MPI_INTEGER, a_tmp_row )
         call MPI_Type_create_resized( a_tmp_row, lb, extent, a_row )
         call MPI_Type_commit( a_row )
     end block
@@ -86,7 +62,7 @@ program matrix_by_rows_collectives
             integer :: rank
             do rank = 0, n_ranks - 1
                 if (rank /= 0) &
-                    call MPI_Recv( e(1, 1), n_rows, a_row, rank, 0, MPI_COMM_WORLD, status )
+                    call MPI_Recv( e(1, 1), ie - ib + 1, a_row, rank, 0, MPI_COMM_WORLD, status )
                 print "(a, i2)", "Rank ", rank
                 do i = 1, quotient + merge(1, 0, rank < remainder)
                     print "(*(i2))", e(i, :)
@@ -94,7 +70,7 @@ program matrix_by_rows_collectives
             end do
         end block
     else
-        call MPI_Send( e(ib, 1), n_rows, a_row, 0, 0, MPI_COMM_WORLD )
+        call MPI_Send( e(ib, 1), ie - ib + 1, a_row, 0, 0, MPI_COMM_WORLD )
     end if
 !-
 

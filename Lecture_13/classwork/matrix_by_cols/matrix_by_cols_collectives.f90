@@ -1,16 +1,17 @@
-! Matrix distribution by columns.
+! Matrix distribution
 !
-! Distribute a global N x N matrix over P processes so that each process has a
-! local portion of it in its memory.  Initialize such a portion with the process
-! rank.  N is not necessarily divisible by P.
-! Each process sends its first and last columns (in F) to neighbors: the fist to
-! the left rank, the last to the right rank.  Each process must allocate extra
-! ghost cells with two columns.
+! Distribute a global N x N matrix over P processes as evenly as possible so
+! that each process has a local portion of this matrix.  Initialize such a
+! portion with the process rank.  N is not necessarily divisible by P.  Each
+! process sends its first and last columns (in Fortran) to neighbors: first to
+! the left rank, last to the right rank.  Each process must allocate two extra
+! colums with ghost cells.
 !
 ! Compile and run:
-! $ mpifort -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace
-!   parallel_mod.f90 matrix_by_cols_collectives.f90
-! $ mpirun -np 3 --oversubscribe ./a.out
+!
+!     $ mpifort -g -O0 -Wall -Wextra -Wpedantic -fcheck=all -fbacktrace \
+!       matrix_by_cols_collective.f90
+!     $ mpirun -np 3 --oversubscribe ./a.out
 !
 ! Enter size 10.
 program matrix_by_cols_collectives
@@ -28,23 +29,12 @@ program matrix_by_cols_collectives
     left_rank  = get_rank( my_rank - 1, n_ranks )
     right_rank = get_rank( my_rank + 1, n_ranks )
 
-!+  TODO: replace with a broadcast.
     if (my_rank == 0) then
         print "(a)", "Enter the matrix size:"
         read *, s
-        block
-            integer :: rank
-            do rank = 1, n_ranks - 1
-                call MPI_Send( s, 1, MPI_INTEGER, rank, 0, MPI_COMM_WORLD )
-            end do
-        end block
-    else
-        block
-            type(MPI_Status) :: status
-            call MPI_Recv( s, 1, MPI_INTEGER, 0, 0, MPI_COMM_WORLD, status )
-        end block
     end if
-!-
+    call MPI_Bcast( s, 1, MPI_INTEGER, 0, MPI_COMM_WORLD )
+
     call partition( my_rank, n_ranks, s, jb, je )
 
     allocate(matrix(s, jb - 1:je + 1), source=my_rank)
