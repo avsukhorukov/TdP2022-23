@@ -88,7 +88,7 @@ contains
         end do
         span = maxval(maxs - mins) * 1.001 ! +0.1% to cover the border
         centers = (mins + maxs) / 2.0
-        answer%min = centers - ( span / 2.0 ) * (topology - 1)
+        answer%min = centers + ( span / 2.0 ) * (topology - 1)
         answer%max = centers + ( span / 2.0 ) * (topology)
     end function bodies_get_dimensions
 

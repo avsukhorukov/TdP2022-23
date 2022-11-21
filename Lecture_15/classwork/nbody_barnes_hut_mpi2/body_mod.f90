@@ -15,7 +15,7 @@ contains
     ! MPI_Op operation for reducing the acceleration component %a only.  You
     ! must convert C pointers to F pointers for arrays and do the reduction in a
     ! loop over 1..len values.  In C examples this is 0..len-1, but in Fortran
-    ! looping starts at base-1.  Don't specify the intent for all four arguments
+    ! it goes through 1..len.  Don't specify the intent for all four arguments
     ! otherwise the compiler will not find the correct argument signature of
     ! the MPI_Op_create().
     subroutine sum_body_a( c_invec, c_inoutvec, len, datatype )

@@ -29,11 +29,11 @@ contains
         do i = 1, size( bodies )
             associate( b_i => bodies(i) )
                 b_i%a(:) = node_acceleration_from( root, b_i )
-                call MPI_Allreduce( MPI_IN_PLACE, b_i%a, 2, MPI_REAL, MPI_SUM, MPI_COMM_WORLD )
+                ! call MPI_Allreduce( MPI_IN_PLACE, b_i%a, 2, MPI_REAL, MPI_SUM, MPI_COMM_WORLD )
             end associate
         end do
-        ! call MPI_Allreduce( MPI_IN_PLACE, bodies, size( bodies ), &
-        !                    a_body_datatype, sum_body_a_op, MPI_COMM_WORLD )
+        call MPI_Allreduce( MPI_IN_PLACE, bodies, size( bodies ), &
+                            a_body_datatype, sum_body_a_op, MPI_COMM_WORLD )
     end subroutine tree_accelerate
 
     subroutine tree_destroy()
