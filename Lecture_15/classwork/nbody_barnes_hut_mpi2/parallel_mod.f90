@@ -45,7 +45,7 @@ contains
         end if
         tmp = my_rank               ! = my_rank = r + c * n_rows
         r   = modulo( tmp, n_rows )
-        tmp = (tmp - r) / n_rows    ! tmp = c
+        tmp = (tmp - r) / n_rows    ! = c
         c   = modulo( tmp, n_cols )
         topology(:) = [r, c]
     end subroutine create_topology

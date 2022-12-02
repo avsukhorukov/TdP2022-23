@@ -18,8 +18,7 @@ contains
         dims = bodies_get_dimensions()
         do i = 1, size( bodies )
             body => bodies(i)
-            if (.not.node_belongs( body%r, dims )) cycle
-            call node_insert( root, body, dims )
+            if (node_belongs( body%r, dims )) call node_insert( root, body, dims )
         end do
     end subroutine tree_create
 

@@ -28,14 +28,12 @@ contains
     ! the given dimensions `dims`.  Use this at level 1 of the tree to check
     ! into which sub-tree the current particle must be inserted based on the
     ! process topology.
-    logical function node_belongs( r, dims )
+    logical function node_belongs( r, dims ) result(answer)
         real, dimension(2), intent(in) :: r
         type(the_dims),     intent(in) :: dims
 
-        node_belongs = (      dims%min(1) <= r(1) .and. r(1) < dims%max(1) &
-                        .and. dims%min(2) <= r(2) .and. r(2) < dims%max(2) )
+        answer = all( dims%min(:) <= r(:) .and. r(:) < dims%max(:) )
     end function node_belongs
-
 
     integer function node_type( node )
         type(a_node_ptr), intent(in) :: node
