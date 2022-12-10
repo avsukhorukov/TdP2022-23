@@ -24,25 +24,25 @@ program ring_factorial
     call MPI_Comm_size( MPI_COMM_WORLD, n_ranks )
 
     ! Create a 1D ring topology.
-    next = get_rank( my_rank - 1, n_ranks )
-    prev = get_rank( my_rank + 1, n_ranks )
+    prev = get_rank( my_rank - 1, n_ranks )
+    next = get_rank( my_rank + 1, n_ranks )
 
     ! Read the number at rank 0 or receive it at the other ranks.
     if (my_rank == 0) then
         read *, factorial
     else
-        call MPI_Recv( factorial, 1, MPI_INTEGER, next, 0, comm, status )
+        call MPI_Recv( factorial, 1, MPI_INTEGER, prev, 0, MPI_COMM_WORLD, status )
     end if
 
     ! All ranks multiply the number.
     factorial = factorial * (my_rank + 1)
 
     ! Send the number to the next rank in the ring.
-    call MPI_Send( factorial, 1, MPI_INTEGER, prev, 0, comm )
+    call MPI_Send( factorial, 1, MPI_INTEGER, next, 0, MPI_COMM_WORLD )
 
     ! Now rank 0 receives the result and prints it.
     if (my_rank == 0) then
-        call MPI_Recv( factorial, 1, MPI_INTEGER, next, 0, comm, status )
+        call MPI_Recv( factorial, 1, MPI_INTEGER, prev, 0, MPI_COMM_WORLD, status )
         print "(i0)", factorial
     end if
 
