@@ -52,8 +52,8 @@ contains
 
     ! Print the entire 2D array to stdout including all four boundaries.
     subroutine print_temperature( mtx, side )
-        real, dimension(:, :), pointer, intent(in out) :: mtx
-        integer,                        intent(in)     :: side
+        real, dimension(:, :), pointer, intent(in) :: mtx
+        integer,                        intent(in) :: side
         integer :: i
 
         do i = 0, s + 1
